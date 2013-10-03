@@ -1,0 +1,14 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="CBHelper-Xamarin/CBHelper.cs">
+    <Files>
+      <File FileName="CBHelper-Xamarin/CBHelper.cs" Line="111" Column="67" />
+      <File FileName="CBHelper-Xamarin-Android/AndroidDeviceInfo.cs" Line="24" Column="38" />
+      <File FileName="CBHelper-Xamarin-iOS/iOSDeviceInfo.cs" Line="24" Column="29" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
