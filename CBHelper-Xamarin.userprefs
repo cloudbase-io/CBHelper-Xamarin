@@ -1,11 +1,31 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="CBHelper-Xamarin/CBHelper.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="CBHelper-Xamarin\Components md\License.md">
     <Files>
-      <File FileName="CBHelper-Xamarin/CBHelper.cs" Line="111" Column="67" />
-      <File FileName="CBHelper-Xamarin-Android/AndroidDeviceInfo.cs" Line="24" Column="38" />
-      <File FileName="CBHelper-Xamarin-iOS/iOSDeviceInfo.cs" Line="24" Column="29" />
+      <File FileName="CBHelper-Xamarin\CBHelper.cs" Line="111" Column="67" />
+      <File FileName="CBHelper-Xamarin-Android\AndroidDeviceInfo.cs" Line="1" Column="1" />
+      <File FileName="CBHelper-Xamarin\Components md\Details.md" Line="12" Column="106" />
+      <File FileName="CBHelper-Xamarin\Components md\GettingStarted.md" Line="28" Column="31" />
+      <File FileName="CBHelper-Xamarin\Components md\License.md" Line="11" Column="2" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="CBHelper-Xamarin" expanded="True">
+            <Node name="References" expanded="True" />
+            <Node name="Components md" expanded="True">
+              <Node name="License.md" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
