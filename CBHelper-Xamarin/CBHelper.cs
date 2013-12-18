@@ -40,17 +40,11 @@ namespace Cloudbase {
         CBLogLevelEvent = 5 /// This is used to log custom events which will then be used to generate analytics
     }
 
-    /// <summary>
-    /// The supported notification types for the WNS service
-    /// </summary>
-    public enum CBNotificationType
-    {
-        CBTileWithText = 0,
-        CBTileWithImageAndText = 1,
-        CBToastWithText = 2,
-        CBToastWithTextAndSubtitle = 3,
-        CBToastWithImageAndText = 4
-    }
+	public enum CBiOSNotificationsCertificateType
+	{
+		CBiOSCertificateDevelopment = 0,
+		CBiOSCertificateProduction = 1
+	}
 
 	class CBJsonDictionaryConverter : CustomCreationConverter<IDictionary<string, object>>
 	{
@@ -318,8 +312,8 @@ namespace Cloudbase {
             set { isHttps = value; }
         }
 		
-		private static string[] CBNotificationTypeDecode = { "tile-text", "tile-image-text", "toast-text-01", "toast-text-02", "toast-image-text-02" };
-        private static string[] CBLogLevelDecode = { "DEBUG", "INFO", "WARNING", "ERROR", "FATAL", "EVENT" };
+		private static string[] CBLogLevelDecode = { "DEBUG", "INFO", "WARNING", "ERROR", "FATAL", "EVENT" };
+		private static string[] CBiOSCertificateDecode = { "development", "production" };
         
 		private string logDefaultCategory; 
         /// <summary>
@@ -681,36 +675,36 @@ namespace Cloudbase {
         }
 
         /// <summary>
-        /// Subscribes the devices with the current Uri received from Microsoft to a notification channel. All devices are
+        /// Subscribes the devices with the current device key to a notification channel. All devices are
         /// autmatically subscribed to the channel <strong>all</strong>.
         /// </summary>
-        /// <param name="NotificationUri">The Uri token returned by HttpNotificationChannel</param>
+        /// <param name="DeviceKey">The key received for the device from APNS or GCM depending whether you are building for iOS or Android</param>
         /// <param name="channel">The name of the channel to subscribe to in addition to all. This field can be sent as null</param>
-        public void NotificationSubscribeDeviceToChannel(string NotificationUri, string channel)
+        public void NotificationSubscribeDeviceToChannel(string DeviceKey, string channel)
         {
             string url = this.getUrl() + this.appCode + "/notifications-register";
             Dictionary<string, string> values = new Dictionary<string, string>();
             values.Add("action", "subscribe");
-            values.Add("device_key", NotificationUri);
-            values.Add("device_network", "win8");
+            values.Add("device_key", DeviceKey);
+            values.Add("device_network", this.deviceInfo.DeviceType.ToLower().Substring(0, 3));
             values.Add("channel", channel);
 
             this.sendRequest("notifications-register", url, values, null);
         }
 
         /// <summary>
-        /// Unsubscribes the devices with the current Uri token received from Microsoft from a notification channel.
+        /// Unsubscribes the devices with the current device key from a notification channel.
         /// </summary>
-        /// <param name="NotificationUri">The Uri token returned by HttpNotificationChannel</param>
+		/// <param name="DeviceKey">The key received for the device from APNS or GCM depending whether you are building for iOS or Android</param>
         /// <param name="channel">The name of the channel to unsubscribe from</param>
         /// <param name="andAll">This parameter tells the cloudbase.io APIs to remove the device completely from the notification channels
         /// including the "all" channel</param>
-        public void NotificationUnsubscribeDeviceFromChannel(string NotificationUri, string channel, bool andAll)
+        public void NotificationUnsubscribeDeviceFromChannel(string DeviceKey, string channel, bool andAll)
         {
             string url = this.getUrl() + this.appCode + "/notifications-register";
             Dictionary<string, string> values = new Dictionary<string, string>();
             values.Add("action", "unsubscribe");
-            values.Add("device_key", NotificationUri);
+			values.Add("device_key", this.deviceInfo.DeviceType.ToLower().Substring(0, 3));
             values.Add("device_network", "win8");
             values.Add("channel", channel);
             if (andAll)
@@ -722,21 +716,16 @@ namespace Cloudbase {
         /// <summary>
         /// Sends a push notification to all client devices on a channel
         /// </summary>
-        /// <param name="type">The type of notification to be sent.</param>
         /// <param name="channel">The name of the channel to notify on</param>
         /// <param name="title">The title, first line of text for the notification</param>
-        /// <param name="subtitle">The second line of text for the notification. This can be left blank</param>
-        /// <param name="imageUri">A URI for an image for the notification. This can be either ms-app:// for a local image or http:// for an 
-        /// image from the internet</param>
-        public void SendNotification(CBNotificationType type, string channel, string title, string subtitle, string imageUri)
+        /// <param name="Certificate">The certificate type (development/production) to be used to send iOS notifications</param>
+        public void SendNotification(string Channel, string Alert, CBiOSNotificationsCertificateType Certificate)
         {
             string url = this.getUrl() + this.appCode + "/notifications";
             Dictionary<string, string> values = new Dictionary<string, string>();
-            values.Add("channel", channel);
-            values.Add("win_type", CBHelper.CBNotificationTypeDecode[(int)type]);
-            values.Add("alert", title);
-            values.Add("alert2", subtitle);
-            values.Add("image_uri", imageUri);
+            values.Add("channel", Channel);
+            values.Add("alert", Alert);
+			values.Add ("cert_type", CBHelper.CBiOSCertificateDecode[(int)Certificate]);
 
             this.sendRequest("notifications", url, values, null);
         }
@@ -1078,7 +1067,10 @@ namespace Cloudbase {
 							resp.ErrorMessage = ex.Message;
 							resp.CBFunction = function;
 							resp.Status = false;
-							whenDone(resp);
+							//InvokeOnMainThread ( () => {
+								whenDone(resp);
+							//});
+
 						}
 					}
 

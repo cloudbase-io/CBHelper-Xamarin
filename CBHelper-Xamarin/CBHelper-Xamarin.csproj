@@ -54,7 +54,6 @@
   <ItemGroup>
     <Folder Include="DataCommands\" />
     <Folder Include="Libs\" />
-    <Folder Include="Components md\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DataCommands\CBDataAggregationCommand.cs.meta" />
@@ -63,8 +62,5 @@
     <None Include="DataCommands\CBDataAggregationCommandUnwind.cs.meta" />
     <None Include="DataCommands\CBHelperSearchCondition.cs.meta" />
     <None Include="Libs\Newtonsoft.Json.dll" />
-    <None Include="Components md\Details.md" />
-    <None Include="Components md\GettingStarted.md" />
-    <None Include="Components md\License.md" />
   </ItemGroup>
 </Project>
