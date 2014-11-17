@@ -970,117 +970,137 @@ namespace Cloudbase {
 			sendRequest(function, url, postData, additionalPostParameters, fileAttachments, whenDone, null);
 		}
 
-		private void sendRequest(string function, string url, object postData, IDictionary<string, string> additionalPostParameters, IEnumerable<CBHelperAttachment> fileAttachments, Func<CBResponseInfo, bool> whenDone, Func<byte[], bool> downloadDone)
-		{
-			HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(url);
-			req.ContentType = "multipart/form-data; boundary=" + this.httpRequestBoundary;
-			req.Method = "POST";
+	    private void sendRequest(string function, string url, object postData, IDictionary<string, string> additionalPostParameters, IEnumerable<CBHelperAttachment> fileAttachments, Func<CBResponseInfo, bool> whenDone, Func<byte[], bool> downloadDone)
+	    {
+	        HttpWebRequest req = (HttpWebRequest) HttpWebRequest.Create(url);
+	        req.ContentType = "multipart/form-data; boundary=" + this.httpRequestBoundary;
+	        req.Method = "POST";
 
-			req.BeginGetRequestStream(delegate(IAsyncResult asynchronousResult)
-			                          {
+	        req.BeginGetRequestStream(delegate(IAsyncResult asynchronousResult)
+	        {
 
-				HttpWebRequest request = (HttpWebRequest)asynchronousResult.AsyncState;
+	            HttpWebRequest request = (HttpWebRequest) asynchronousResult.AsyncState;
 
-				// End the operation
-				Stream postStream = request.EndGetRequestStream(asynchronousResult);
+	            try
+	            {
+	                // End the operation
+	                Stream postStream = request.EndGetRequestStream(asynchronousResult);
 
-				this.prepareParameters(postStream, postData, additionalPostParameters, fileAttachments);
+	                this.prepareParameters(postStream, postData, additionalPostParameters, fileAttachments);
 
-				postStream.Flush();
-				//postStream.Close();
-				// Start the asynchronous operation to get the response
-				request.BeginGetResponse(new AsyncCallback(delegate(IAsyncResult responseResult)
-				                                           {
-					try
-					{
-						HttpWebRequest respReq = (HttpWebRequest)asynchronousResult.AsyncState;
+	                postStream.Flush();
+	                //postStream.Close();
+	                // Start the asynchronous operation to get the response
+	                request.BeginGetResponse(new AsyncCallback(delegate(IAsyncResult responseResult)
+	                {
+	                    try
+	                    {
+	                        HttpWebRequest respReq = (HttpWebRequest) asynchronousResult.AsyncState;
 
-						// End the operation
-						HttpWebResponse response = (HttpWebResponse)respReq.EndGetResponse(responseResult);
-						Stream streamResponse = response.GetResponseStream();
+	                        // End the operation
+	                        HttpWebResponse response = (HttpWebResponse) respReq.EndGetResponse(responseResult);
+	                        Stream streamResponse = response.GetResponseStream();
 
-						if (function.Equals("download"))
-						{
-							byte[] responseBytes = new byte[streamResponse.Length];
-							streamResponse.Read(responseBytes, 0, (int)streamResponse.Length);
+	                        if (function.Equals("download"))
+	                        {
+	                            byte[] responseBytes = new byte[streamResponse.Length];
+	                            streamResponse.Read(responseBytes, 0, (int) streamResponse.Length);
 
-							if (downloadDone != null)
-							{
-								downloadDone(responseBytes);
-							}
-							//streamResponse.Close();
-						}
-						else
-						{
-							StreamReader streamRead = new StreamReader(streamResponse);
-							string responseString = streamRead.ReadToEnd();
+	                            if (downloadDone != null)
+	                            {
+	                                downloadDone(responseBytes);
+	                            }
+	                            //streamResponse.Close();
+	                        }
+	                        else
+	                        {
+	                            StreamReader streamRead = new StreamReader(streamResponse);
+	                            string responseString = streamRead.ReadToEnd();
 
-							if (this.debugMode)
-								System.Diagnostics.Debug.WriteLine("Response received: " + responseString);
+	                            if (this.debugMode)
+	                                System.Diagnostics.Debug.WriteLine("Response received: " + responseString);
 
-							IDictionary<string, object> parsedObject = JsonConvert.DeserializeObject<IDictionary<string, object>>(
-								responseString, new JsonConverter[] { new CBJsonDictionaryConverter(), new CBJsonArrayConverter() });
-							//Dictionary<string, object> parsedObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);//JsonConvert.DeserializeObject<Dictionary<string, string>>(output);//JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(output);
+	                            IDictionary<string, object> parsedObject = JsonConvert.DeserializeObject<IDictionary<string, object>>(
+	                                responseString, new JsonConverter[] {new CBJsonDictionaryConverter(), new CBJsonArrayConverter()});
+	                            //Dictionary<string, object> parsedObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(output);//JsonConvert.DeserializeObject<Dictionary<string, string>>(output);//JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(output);
 
-							if (this.debugMode)
-								System.Diagnostics.Debug.WriteLine("object out: " + JsonConvert.SerializeObject(parsedObject));
+	                            if (this.debugMode)
+	                                System.Diagnostics.Debug.WriteLine("object out: " + JsonConvert.SerializeObject(parsedObject));
 
-							if (whenDone != null)
-							{
-								CBResponseInfo resp = new CBResponseInfo();
-								resp.HttpStatus = 200;
-								resp.Status = (Convert.ToString(((Dictionary<string, object>)parsedObject[function])["status"]).Equals("OK"));
-								resp.CBFunction = function;
-								resp.Data = ((Dictionary<string, object>)parsedObject[function])["message"];
-								resp.OutputString = JsonConvert.SerializeObject(((Dictionary<string, object>)parsedObject[function])["message"]);
+	                            if (whenDone != null)
+	                            {
+	                                CBResponseInfo resp = new CBResponseInfo();
+	                                resp.HttpStatus = 200;
+	                                resp.Status = (Convert.ToString(((Dictionary<string, object>) parsedObject[function])["status"]).Equals("OK"));
+	                                resp.CBFunction = function;
+	                                resp.Data = ((Dictionary<string, object>) parsedObject[function])["message"];
+	                                resp.OutputString = JsonConvert.SerializeObject(((Dictionary<string, object>) parsedObject[function])["message"]);
 
-								whenDone(resp);
-							}
-							//streamRead.Close();
-						}
-					}
-					catch (WebException webEx)
-					{
-						if (this.DebugMode)
-							System.Diagnostics.Debug.WriteLine("WebException while receiving response: " + webEx.Message);
+	                                whenDone(resp);
+	                            }
+	                            //streamRead.Close();
+	                        }
+	                    }
+	                    catch (WebException webEx)
+	                    {
+	                        if (this.DebugMode)
+	                            System.Diagnostics.Debug.WriteLine("WebException while receiving response: " + webEx.Message);
 
-						if (whenDone != null)
-						{
-							CBResponseInfo resp = new CBResponseInfo();
-							HttpWebResponse webResp = (HttpWebResponse)webEx.Response;
-							resp.HttpStatus = (int)webResp.StatusCode;
-							resp.Status = false;
-							resp.ErrorMessage = webEx.Message;
-							resp.CBFunction = function;
-							whenDone(resp);
-						}
-					}
-					catch (Exception ex)
-					{
-						if (this.DebugMode)
-							System.Diagnostics.Debug.WriteLine("Error while receiving/processing response: " + ex.Message);
+	                        if (whenDone != null)
+	                        {
+	                            CBResponseInfo resp = new CBResponseInfo();
+	                            HttpWebResponse webResp = (HttpWebResponse) webEx.Response;
+	                            resp.HttpStatus = (int) webResp.StatusCode;
+	                            resp.Status = false;
+	                            resp.ErrorMessage = webEx.Message;
+	                            resp.CBFunction = function;
+	                            whenDone(resp);
+	                        }
+	                    }
+	                    catch (Exception ex)
+	                    {
+	                        if (this.DebugMode)
+	                            System.Diagnostics.Debug.WriteLine("Error while receiving/processing response: " + ex.Message);
 
-						if (whenDone != null)
-						{
-							CBResponseInfo resp = new CBResponseInfo();
-							resp.HttpStatus = 500;
-							resp.ErrorMessage = ex.Message;
-							resp.CBFunction = function;
-							resp.Status = false;
-							//InvokeOnMainThread ( () => {
-								whenDone(resp);
-							//});
+	                        if (whenDone != null)
+	                        {
+	                            CBResponseInfo resp = new CBResponseInfo();
+	                            resp.HttpStatus = 500;
+	                            resp.ErrorMessage = ex.Message;
+	                            resp.CBFunction = function;
+	                            resp.Status = false;
+	                            //InvokeOnMainThread ( () => {
+	                            whenDone(resp);
+	                            //});
 
-						}
-					}
+	                        }
+	                    }
 
-				}), request);
+	                }), request);
+	            }
+	            catch (Exception ex)
+	            {
+	                if (this.DebugMode)
+	                    System.Diagnostics.Debug.WriteLine("Error while receiving/processing response: " + ex.Message);
 
-			}, req);
-		}
+	                if (whenDone != null)
+	                {
+	                    CBResponseInfo resp = new CBResponseInfo();
+	                    resp.HttpStatus = 500;
+	                    resp.ErrorMessage = ex.Message;
+	                    resp.CBFunction = function;
+	                    resp.Status = false;
+	                    //InvokeOnMainThread ( () => {
+	                    whenDone(resp);
+	                    //});
 
-		
-		private string getUrl()
+	                }
+	            }
+	        }, req);
+	    }
+
+
+	    private string getUrl()
         {
             return (this.isHttps ? "https://" : "http://") + this.apiUrl + "/";
         }
